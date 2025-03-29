@@ -4,6 +4,19 @@
   
   
   <entry>
+    <title>临时表的产生场景</title>
+    <link href="/2025/03/29/%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%9A%84%E4%BA%A7%E7%94%9F%E5%9C%BA%E6%99%AF/"/>
+    <url>/2025/03/29/%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%9A%84%E4%BA%A7%E7%94%9F%E5%9C%BA%E6%99%AF/</url>
+    
+    <content type="html"><![CDATA[<p>临时表通常在数据库操作中用于临时存储中间结果，以便简化复杂查询或优化性能。以下是一些常见场景：</p><hr><h3 id="1-复杂查询处理"><a href="#1-复杂查询处理" class="headerlink" title="1. 复杂查询处理"></a>1. <strong>复杂查询处理</strong></h3><p>• <strong>场景</strong>：涉及多步骤的查询（如多层子查询、多表 JOIN）时，数据库可能生成临时表存储中间结果。<br>• <strong>示例</strong>：统计每个地区的销售总额，可能需要先按地区汇总订单数据到临时表，再计算总和。</p><hr><h3 id="2-排序与分组（ORDER-BY-GROUP-BY）"><a href="#2-排序与分组（ORDER-BY-GROUP-BY）" class="headerlink" title="2. 排序与分组（ORDER BY &#x2F; GROUP BY）"></a>2. <strong>排序与分组（ORDER BY &#x2F; GROUP BY）</strong></h3><p>• <strong>场景</strong>：对大量数据排序或分组时，数据库可能用临时表存放中间结果。<br>• <strong>示例</strong>：<code>SELECT * FROM sales ORDER BY amount DESC LIMIT 100</code>，临时表可能用于存储排序后的结果。</p><hr><h3 id="3-窗口函数（Window-Functions）"><a href="#3-窗口函数（Window-Functions）" class="headerlink" title="3. 窗口函数（Window Functions）"></a>3. <strong>窗口函数（Window Functions）</strong></h3><p>• <strong>场景</strong>：使用 <code>ROW_NUMBER()</code>, <code>RANK()</code> 等窗口函数时，可能需要临时表存储中间计算结果。<br>• <strong>示例</strong>：按销售额排名时，临时表可暂存分区和排序后的数据。</p><hr><h3 id="4-数据去重（DISTINCT-GROUP-BY）"><a href="#4-数据去重（DISTINCT-GROUP-BY）" class="headerlink" title="4. 数据去重（DISTINCT &#x2F; GROUP BY）"></a>4. <strong>数据去重（DISTINCT &#x2F; GROUP BY）</strong></h3><p>• <strong>场景</strong>：去重操作可能生成临时表存储唯一值。<br>• <strong>示例</strong>：<code>SELECT DISTINCT user_id FROM orders</code> 会将去重后的数据存入临时表。</p><hr><h3 id="5-优化子查询"><a href="#5-优化子查询" class="headerlink" title="5. 优化子查询"></a>5. <strong>优化子查询</strong></h3><p>• <strong>场景</strong>：复杂子查询可能被优化器转换为临时表，避免重复执行。<br>• <strong>示例</strong>：多次引用的子查询（如 <code>WHERE id IN (SELECT ...)</code>）可能生成临时表提升性能。</p><hr><h3 id="6-UNION-UNION-ALL-操作"><a href="#6-UNION-UNION-ALL-操作" class="headerlink" title="6. UNION &#x2F; UNION ALL 操作"></a>6. <strong>UNION &#x2F; UNION ALL 操作</strong></h3><p>• <strong>场景</strong>：合并多个查询结果时，临时表存储各结果集后再合并。<br>• <strong>示例</strong>：<code>SELECT a FROM t1 UNION SELECT b FROM t2</code> 会先将两个查询结果存入临时表。</p><hr><h3 id="7-会话或事务中的临时存储"><a href="#7-会话或事务中的临时存储" class="headerlink" title="7. 会话或事务中的临时存储"></a>7. <strong>会话或事务中的临时存储</strong></h3><p>• <strong>场景</strong>：在会话或事务中显式创建临时表，存储中间数据供后续操作使用。<br>• <strong>示例</strong>：用户会话中手动创建临时表存储计算过程中的数据。</p><hr><h3 id="8-内存不足时的磁盘写入"><a href="#8-内存不足时的磁盘写入" class="headerlink" title="8. 内存不足时的磁盘写入"></a>8. <strong>内存不足时的磁盘写入</strong></h3><p>• <strong>场景</strong>：当中间结果过大超出内存限制，数据库将数据写入磁盘临时表。<br>• <strong>示例</strong>：处理超大型数据集时，临时表可能存储在磁盘而非内存。</p><hr><h3 id="9-跨数据库或跨实例查询"><a href="#9-跨数据库或跨实例查询" class="headerlink" title="9. 跨数据库或跨实例查询"></a>9. <strong>跨数据库或跨实例查询</strong></h3><p>• <strong>场景</strong>：涉及多个数据库或外部数据源的查询，临时表暂存数据以便关联。<br>• <strong>示例</strong>：从不同数据库实例提取数据并关联时，临时表整合数据。</p><hr><h3 id="10-游标或存储过程"><a href="#10-游标或存储过程" class="headerlink" title="10. 游标或存储过程"></a>10. <strong>游标或存储过程</strong></h3><p>• <strong>场景</strong>：在存储过程或游标处理中，临时表用于分步处理数据。<br>• <strong>示例</strong>：逐行处理数据时，临时表暂存批量处理的结果。</p><hr><h3 id="临时表的生命周期"><a href="#临时表的生命周期" class="headerlink" title="临时表的生命周期"></a>临时表的生命周期</h3><p>• <strong>会话级临时表</strong>：仅存在于当前会话，会话结束自动删除。<br>• <strong>事务级临时表</strong>：仅存在于当前事务，事务提交后自动删除。</p><hr><p>通过合理使用临时表，可以显著提升复杂查询的效率，但需注意其可能带来的磁盘 I&#x2F;O 开销。</p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>synchronized为什么会有数据不一致的情况</title>
     <link href="/2025/03/29/synchronized%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%9C%89%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E6%83%85%E5%86%B5/"/>
     <url>/2025/03/29/synchronized%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%9C%89%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E6%83%85%E5%86%B5/</url>
