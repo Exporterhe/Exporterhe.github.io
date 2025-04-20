@@ -224,6 +224,138 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/04/20/%E5%9F%BA%E4%BA%8ECanal%E5%A2%9E%E9%87%8F%E5%90%8C%E6%AD%A5rabbitmq%E6%9E%84%E5%BB%BAES%E7%B4%A2%E5%BC%95/" target="_self">
+          基于Canal增量同步rabbitmq构建ES索引
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/20/%E5%9F%BA%E4%BA%8ECanal%E5%A2%9E%E9%87%8F%E5%90%8C%E6%AD%A5rabbitmq%E6%9E%84%E5%BB%BAES%E7%B4%A2%E5%BC%95/" target="_self">
+        <div>
+          1. 定义基础消息实体类​   1234567891011@Data@NoArgsConstructorpublic class CanalMessage&lt;T&gt; &#123;    private String database;    private String table;    private String type;    private List&lt;T&gt; data
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-20 13:57" pubdate>
+              2025-04-20
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/13/canal%E5%92%8CMQ%E9%80%89%E5%9E%8B/" target="_self">
+          canal和MQ选型
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/13/canal%E5%92%8CMQ%E9%80%89%E5%9E%8B/" target="_self">
+        <div>
+          在构建实时数据同步或事件驱动架构时，Canal 和 消息队列（MQ） 的选择并非互斥，而是需要根据业务场景和需求进行组合设计。以下是详细的选型指南和典型方案：  一、核心定位对比   组件 核心能力 适用场景    Canal 解析 MySQL Binlog，提供增量数据变更捕获 数据库到其他存储（如ES、HBase）的实时同步   消息队列（MQ） 异步通信、流量削峰、系统解耦、消息持久化 服
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-13 20:56" pubdate>
+              2025-04-13
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/09/ES%E5%AE%9E%E8%B7%B5-%E7%B4%A2%E5%BC%95%E5%BA%93%E5%88%9B%E5%BB%BA/" target="_self">
+          ES实践-索引库创建
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/09/ES%E5%AE%9E%E8%B7%B5-%E7%B4%A2%E5%BC%95%E5%BA%93%E5%88%9B%E5%BB%BA/" target="_self">
+        <div>
+          以下是基于 Logstash JDBC 插件实现 MySQL 与 Elasticsearch 数据同步的完整方案，结合多个技术文档的最佳实践：  一、索引设计策略 字段类型映射 123456789101112131415161718PUT /pms_sku_info &#123;   &quot;mappings&quot;: &#123;     &quot;properties&quot;:
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-09 23:36" pubdate>
+              2025-04-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/04/06/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/" target="_self">
+          高并发缓存设计
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/06/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/" target="_self">
+        <div>
+          ​​分布式缓存架构​​    设计多级缓存策略：本地缓存（Caffeine）+ Redis集群（Codis分片），缓存命中率提升至92%   解决缓存穿透：布隆过滤器拦截无效请求，减少80%的无效数据库访问   优化缓存雪崩：随机过期时间+热点数据永不过期，保障大促期间系统可用性99.99%   ​​性能调优​​    Redis单节点QPS从8万提升至15万（Pipeline批处理+连接池优化
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-04-06 21:25" pubdate>
+              2025-04-06
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/03/29/%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%9A%84%E4%BA%A7%E7%94%9F%E5%9C%BA%E6%99%AF/" target="_self">
           临时表的产生场景
         </a>

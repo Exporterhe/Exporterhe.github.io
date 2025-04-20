@@ -16,21 +16,21 @@
   <meta name="author" content="llg">
   <meta name="keywords" content="">
   
-    <meta name="description" content="临时表通常在数据库操作中用于临时存储中间结果，以便简化复杂查询或优化性能。以下是一些常见场景：  1. 复杂查询处理• 场景：涉及多步骤的查询（如多层子查询、多表 JOIN）时，数据库可能生成临时表存储中间结果。• 示例：统计每个地区的销售总额，可能需要先按地区汇总订单数据到临时表，再计算总和。  2. 排序与分组（ORDER BY &#x2F; GROUP BY）• 场景：对大量数据排序或分组时">
+    <meta name="description" content="在构建实时数据同步或事件驱动架构时，Canal 和 消息队列（MQ） 的选择并非互斥，而是需要根据业务场景和需求进行组合设计。以下是详细的选型指南和典型方案：  一、核心定位对比   组件 核心能力 适用场景    Canal 解析 MySQL Binlog，提供增量数据变更捕获 数据库到其他存储（如ES、HBase）的实时同步   消息队列（MQ） 异步通信、流量削峰、系统解耦、消息持久化 服">
 <meta property="og:type" content="article">
-<meta property="og:title" content="临时表的产生场景">
-<meta property="og:url" content="http://example.com/2025/03/29/%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%9A%84%E4%BA%A7%E7%94%9F%E5%9C%BA%E6%99%AF/index.html">
+<meta property="og:title" content="canal和MQ选型">
+<meta property="og:url" content="http://example.com/2025/04/13/canal%E5%92%8CMQ%E9%80%89%E5%9E%8B/index.html">
 <meta property="og:site_name" content="llg">
-<meta property="og:description" content="临时表通常在数据库操作中用于临时存储中间结果，以便简化复杂查询或优化性能。以下是一些常见场景：  1. 复杂查询处理• 场景：涉及多步骤的查询（如多层子查询、多表 JOIN）时，数据库可能生成临时表存储中间结果。• 示例：统计每个地区的销售总额，可能需要先按地区汇总订单数据到临时表，再计算总和。  2. 排序与分组（ORDER BY &#x2F; GROUP BY）• 场景：对大量数据排序或分组时">
+<meta property="og:description" content="在构建实时数据同步或事件驱动架构时，Canal 和 消息队列（MQ） 的选择并非互斥，而是需要根据业务场景和需求进行组合设计。以下是详细的选型指南和典型方案：  一、核心定位对比   组件 核心能力 适用场景    Canal 解析 MySQL Binlog，提供增量数据变更捕获 数据库到其他存储（如ES、HBase）的实时同步   消息队列（MQ） 异步通信、流量削峰、系统解耦、消息持久化 服">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-03-29T12:51:13.000Z">
-<meta property="article:modified_time" content="2025-03-29T12:51:51.008Z">
+<meta property="article:published_time" content="2025-04-13T12:56:40.000Z">
+<meta property="article:modified_time" content="2025-04-13T13:02:42.252Z">
 <meta property="article:author" content="llg">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>临时表的产生场景 - llg</title>
+  <title>canal和MQ选型 - llg</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -196,7 +196,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="临时表的产生场景"></span>
+            <span id="subtitle" data-typed-text="canal和MQ选型"></span>
           
         </div>
 
@@ -207,8 +207,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-03-29 20:51" pubdate>
-          2025年3月29日 晚上
+        <time datetime="2025-04-13 20:56" pubdate>
+          2025年4月13日 晚上
         </time>
       </span>
     
@@ -219,7 +219,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          719 字
+          1k 字
         
       </span>
     
@@ -230,7 +230,7 @@
         
         
         
-          6 分钟
+          9 分钟
         
       </span>
     
@@ -267,36 +267,69 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">临时表的产生场景</h1>
+            <h1 id="seo-header">canal和MQ选型</h1>
             
             
               <div class="markdown-body">
                 
-                <p>临时表通常在数据库操作中用于临时存储中间结果，以便简化复杂查询或优化性能。以下是一些常见场景：</p>
+                <hr>
+<p>在构建实时数据同步或事件驱动架构时，<strong>Canal</strong> 和 <strong>消息队列（MQ）</strong> 的选择并非互斥，而是需要根据业务场景和需求进行组合设计。以下是详细的选型指南和典型方案：</p>
 <hr>
-<h3 id="1-复杂查询处理"><a href="#1-复杂查询处理" class="headerlink" title="1. 复杂查询处理"></a>1. <strong>复杂查询处理</strong></h3><p>• <strong>场景</strong>：涉及多步骤的查询（如多层子查询、多表 JOIN）时，数据库可能生成临时表存储中间结果。<br>• <strong>示例</strong>：统计每个地区的销售总额，可能需要先按地区汇总订单数据到临时表，再计算总和。</p>
+<h3 id="一、核心定位对比"><a href="#一、核心定位对比" class="headerlink" title="一、核心定位对比"></a><strong>一、核心定位对比</strong></h3><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>核心能力</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Canal</strong></td>
+<td>解析 MySQL Binlog，提供增量数据变更捕获</td>
+<td>数据库到其他存储（如ES、HBase）的实时同步</td>
+</tr>
+<tr>
+<td><strong>消息队列（MQ）</strong></td>
+<td>异步通信、流量削峰、系统解耦、消息持久化</td>
+<td>服务间解耦、事件总线、大数据管道、高并发缓冲</td>
+</tr>
+</tbody></table>
 <hr>
-<h3 id="2-排序与分组（ORDER-BY-GROUP-BY）"><a href="#2-排序与分组（ORDER-BY-GROUP-BY）" class="headerlink" title="2. 排序与分组（ORDER BY &#x2F; GROUP BY）"></a>2. <strong>排序与分组（ORDER BY &#x2F; GROUP BY）</strong></h3><p>• <strong>场景</strong>：对大量数据排序或分组时，数据库可能用临时表存放中间结果。<br>• <strong>示例</strong>：<code>SELECT * FROM sales ORDER BY amount DESC LIMIT 100</code>，临时表可能用于存储排序后的结果。</p>
+<h3 id="二、典型场景选型方案"><a href="#二、典型场景选型方案" class="headerlink" title="二、典型场景选型方案"></a><strong>二、典型场景选型方案</strong></h3><h4 id="方案1：纯-Canal-直连消费"><a href="#方案1：纯-Canal-直连消费" class="headerlink" title="方案1：纯 Canal 直连消费"></a><strong>方案1：纯 Canal 直连消费</strong></h4><p><strong>架构</strong>：<br><code>MySQL → 数据消费者（如Java客户端）</code></p>
+<p><strong>适用场景</strong>：<br>• 简单的单消费者数据同步（如同步到Elasticsearch）<br>• 对消息可靠性要求不高（允许偶尔丢失）<br>• 开发测试环境快速验证  </p>
+<p><strong>优势</strong>：<br>• 架构简单，部署成本低<br>• 实时性高（无中间件延迟）  </p>
+<p><strong>劣势</strong>：<br>• 无消息堆积能力，消费者故障导致数据丢失<br>• 多消费者需自行实现分发逻辑  </p>
 <hr>
-<h3 id="3-窗口函数（Window-Functions）"><a href="#3-窗口函数（Window-Functions）" class="headerlink" title="3. 窗口函数（Window Functions）"></a>3. <strong>窗口函数（Window Functions）</strong></h3><p>• <strong>场景</strong>：使用 <code>ROW_NUMBER()</code>, <code>RANK()</code> 等窗口函数时，可能需要临时表存储中间计算结果。<br>• <strong>示例</strong>：按销售额排名时，临时表可暂存分区和排序后的数据。</p>
+<h4 id="方案2：Canal-MQ-组合"><a href="#方案2：Canal-MQ-组合" class="headerlink" title="方案2：Canal + MQ 组合"></a><strong>方案2：Canal + MQ 组合</strong></h4><p><strong>架构</strong>：<br><code>MySQL → Canal → MQ（如Kafka） → 多个消费者</code></p>
+<p><strong>适用场景</strong>：<br>• 需要多消费者订阅同一份数据变更（如同时更新缓存和发通知）<br>• 要求消息持久化和高可靠性<br>• 大数据实时分析（如Flink消费Kafka数据）  </p>
+<p><strong>优势</strong>：<br>• 利用MQ的发布-订阅模型，天然支持多消费者<br>• 消息堆积能力应对消费者故障<br>• MQ的分区机制提升吞吐量  </p>
+<p><strong>劣势</strong>：<br>• 引入MQ增加运维复杂度<br>• 端到端延迟略有增加  </p>
 <hr>
-<h3 id="4-数据去重（DISTINCT-GROUP-BY）"><a href="#4-数据去重（DISTINCT-GROUP-BY）" class="headerlink" title="4. 数据去重（DISTINCT &#x2F; GROUP BY）"></a>4. <strong>数据去重（DISTINCT &#x2F; GROUP BY）</strong></h3><p>• <strong>场景</strong>：去重操作可能生成临时表存储唯一值。<br>• <strong>示例</strong>：<code>SELECT DISTINCT user_id FROM orders</code> 会将去重后的数据存入临时表。</p>
+<h4 id="方案3：纯-MQ-事务消息"><a href="#方案3：纯-MQ-事务消息" class="headerlink" title="方案3：纯 MQ 事务消息"></a><strong>方案3：纯 MQ 事务消息</strong></h4><p><strong>架构</strong>：<br><code>应用 → MQ事务消息 → 消费者</code></p>
+<p><strong>适用场景</strong>：<br>• 业务强一致性要求（如订单创建后发券）<br>• 无数据库Binlog访问权限的跨服务协作<br>• 非数据库变更的事件驱动场景  </p>
+<p><strong>优势</strong>：<br>• 严格保障本地事务与消息发送的原子性<br>• 天然融入微服务架构  </p>
+<p><strong>劣势</strong>：<br>• 无法捕获非业务SQL的变更（如DBA直接操作数据库）<br>• 需改造业务代码埋点  </p>
 <hr>
-<h3 id="5-优化子查询"><a href="#5-优化子查询" class="headerlink" title="5. 优化子查询"></a>5. <strong>优化子查询</strong></h3><p>• <strong>场景</strong>：复杂子查询可能被优化器转换为临时表，避免重复执行。<br>• <strong>示例</strong>：多次引用的子查询（如 <code>WHERE id IN (SELECT ...)</code>）可能生成临时表提升性能。</p>
+<h3 id="三、决策树：如何选择？"><a href="#三、决策树：如何选择？" class="headerlink" title="三、决策树：如何选择？"></a><strong>三、决策树：如何选择？</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">是否需要捕获数据库所有变更？<br>├── 是 → 必须使用 Canal<br>│   └── 是否需要多消费者/高可靠？<br>│       ├── 是 → Canal + MQ（方案2）<br>│       └── 否 → 纯 Canal（方案1）<br>└── 否 → 是否为业务触发的明确事件？<br>    ├── 是 → 使用 MQ 事务消息（方案3）<br>    └── 否 → 结合业务需求定制（可能混合方案）<br></code></pre></td></tr></table></figure>
+
 <hr>
-<h3 id="6-UNION-UNION-ALL-操作"><a href="#6-UNION-UNION-ALL-操作" class="headerlink" title="6. UNION &#x2F; UNION ALL 操作"></a>6. <strong>UNION &#x2F; UNION ALL 操作</strong></h3><p>• <strong>场景</strong>：合并多个查询结果时，临时表存储各结果集后再合并。<br>• <strong>示例</strong>：<code>SELECT a FROM t1 UNION SELECT b FROM t2</code> 会先将两个查询结果存入临时表。</p>
+<h3 id="四、性能与可靠性对比"><a href="#四、性能与可靠性对比" class="headerlink" title="四、性能与可靠性对比"></a><strong>四、性能与可靠性对比</strong></h3><p>| 指标                | Canal直连           | Canal + MQ          | 纯MQ事务消息         |<br>|———————|———————|————————————–|<br>| 吞吐量              | 中（单线程消费）     | 高（MQ分区并行）     | 高（MQ分区并行）     |<br>| 端到端延迟          | 低（ms级）          | 中（增加MQ转发）     | 低（直接发送）        |<br>| 数据可靠性          | 低（无持久化）       | 高（MQ持久化）       | 高（MQ持久化）        |<br>| 多消费者支持        | 需自行实现           | 原生支持             | 原生支持              |<br>| 架构复杂度          | 简单                | 中等                 | 中等                 |</p>
 <hr>
-<h3 id="7-会话或事务中的临时存储"><a href="#7-会话或事务中的临时存储" class="headerlink" title="7. 会话或事务中的临时存储"></a>7. <strong>会话或事务中的临时存储</strong></h3><p>• <strong>场景</strong>：在会话或事务中显式创建临时表，存储中间数据供后续操作使用。<br>• <strong>示例</strong>：用户会话中手动创建临时表存储计算过程中的数据。</p>
+<h3 id="五、技术组合推荐"><a href="#五、技术组合推荐" class="headerlink" title="五、技术组合推荐"></a><strong>五、技术组合推荐</strong></h3><h4 id="1-大数据实时分析场景"><a href="#1-大数据实时分析场景" class="headerlink" title="1. 大数据实时分析场景"></a><strong>1. 大数据实时分析场景</strong></h4><p>• <strong>架构</strong>：<code>Canal → Kafka → Flink/Spark</code><br>• <strong>优势</strong>：高吞吐量、低延迟处理海量数据变更日志  </p>
+<h4 id="2-微服务事件驱动架构"><a href="#2-微服务事件驱动架构" class="headerlink" title="2. 微服务事件驱动架构"></a><strong>2. 微服务事件驱动架构</strong></h4><p>• <strong>架构</strong>：<code>应用 → RabbitMQ/RocketMQ事务消息 → 消费者</code><br>• <strong>优势</strong>：保障业务事件与消息的强一致性  </p>
+<h4 id="3-数据库多副本同步"><a href="#3-数据库多副本同步" class="headerlink" title="3. 数据库多副本同步"></a><strong>3. 数据库多副本同步</strong></h4><p>• <strong>架构</strong>：<code>Canal → Kafka → 多个存储（ES、HBase、ClickHouse）</code><br>• <strong>优势</strong>：一份Binlog解析，多端复用  </p>
 <hr>
-<h3 id="8-内存不足时的磁盘写入"><a href="#8-内存不足时的磁盘写入" class="headerlink" title="8. 内存不足时的磁盘写入"></a>8. <strong>内存不足时的磁盘写入</strong></h3><p>• <strong>场景</strong>：当中间结果过大超出内存限制，数据库将数据写入磁盘临时表。<br>• <strong>示例</strong>：处理超大型数据集时，临时表可能存储在磁盘而非内存。</p>
+<h3 id="六、实施注意事项"><a href="#六、实施注意事项" class="headerlink" title="六、实施注意事项"></a><strong>六、实施注意事项</strong></h3><ol>
+<li><p><strong>Canal 配置优化</strong>：  </p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-comment"># 提升解析性能</span><br><span class="hljs-attr">canal.instance.parser.parallel</span> = <span class="hljs-string">true</span><br><span class="hljs-attr">canal.instance.parser.parallelThreadSize</span> = <span class="hljs-string">8</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>MQ 选型建议</strong>：<br>• <strong>Kafka</strong>：大数据量、高吞吐场景<br>• <strong>RocketMQ</strong>：事务消息、顺序消息场景<br>• <strong>RabbitMQ</strong>：复杂路由、低延迟场景  </p>
+</li>
+<li><p><strong>消息格式标准化</strong>：<br>使用统一格式（如Avro、Protobuf）序列化变更事件，避免下游解析混乱。</p>
+</li>
+</ol>
 <hr>
-<h3 id="9-跨数据库或跨实例查询"><a href="#9-跨数据库或跨实例查询" class="headerlink" title="9. 跨数据库或跨实例查询"></a>9. <strong>跨数据库或跨实例查询</strong></h3><p>• <strong>场景</strong>：涉及多个数据库或外部数据源的查询，临时表暂存数据以便关联。<br>• <strong>示例</strong>：从不同数据库实例提取数据并关联时，临时表整合数据。</p>
-<hr>
-<h3 id="10-游标或存储过程"><a href="#10-游标或存储过程" class="headerlink" title="10. 游标或存储过程"></a>10. <strong>游标或存储过程</strong></h3><p>• <strong>场景</strong>：在存储过程或游标处理中，临时表用于分步处理数据。<br>• <strong>示例</strong>：逐行处理数据时，临时表暂存批量处理的结果。</p>
-<hr>
-<h3 id="临时表的生命周期"><a href="#临时表的生命周期" class="headerlink" title="临时表的生命周期"></a>临时表的生命周期</h3><p>• <strong>会话级临时表</strong>：仅存在于当前会话，会话结束自动删除。<br>• <strong>事务级临时表</strong>：仅存在于当前事务，事务提交后自动删除。</p>
-<hr>
-<p>通过合理使用临时表，可以显著提升复杂查询的效率，但需注意其可能带来的磁盘 I&#x2F;O 开销。</p>
+<p>通过合理选择 Canal 和 MQ 的组合，可构建出兼顾实时性、可靠性和扩展性的数据管道。优先明确业务需求中的 <strong>数据一致性要求</strong>、<strong>消费者数量</strong> 和 <strong>吞吐量指标</strong>，再据此选择最适合的架构方案。</p>
 
                 
               </div>
@@ -314,8 +347,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>临时表的产生场景</div>
-      <div>http://example.com/2025/03/29/临时表的产生场景/</div>
+      <div>canal和MQ选型</div>
+      <div>http://example.com/2025/04/13/canal和MQ选型/</div>
     </div>
     <div class="license-meta">
       
@@ -327,7 +360,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年3月29日</div>
+          <div>2025年4月13日</div>
         </div>
       
       
@@ -359,9 +392,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/04/06/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/" title="高并发缓存设计">
+                      <a href="/2025/04/20/%E5%9F%BA%E4%BA%8ECanal%E5%A2%9E%E9%87%8F%E5%90%8C%E6%AD%A5rabbitmq%E6%9E%84%E5%BB%BAES%E7%B4%A2%E5%BC%95/" title="基于Canal增量同步rabbitmq构建ES索引">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">高并发缓存设计</span>
+                        <span class="hidden-mobile">基于Canal增量同步rabbitmq构建ES索引</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -369,8 +402,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/03/29/synchronized%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%9C%89%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4%E7%9A%84%E6%83%85%E5%86%B5/" title="synchronized为什么会有数据不一致的情况">
-                        <span class="hidden-mobile">synchronized为什么会有数据不一致的情况</span>
+                      <a href="/2025/04/09/ES%E5%AE%9E%E8%B7%B5-%E7%B4%A2%E5%BC%95%E5%BA%93%E5%88%9B%E5%BB%BA/" title="ES实践-索引库创建">
+                        <span class="hidden-mobile">ES实践-索引库创建</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

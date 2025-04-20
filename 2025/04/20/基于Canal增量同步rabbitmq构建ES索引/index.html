@@ -1,0 +1,628 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="llg">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1. 定义基础消息实体类​   1234567891011@Data@NoArgsConstructorpublic class CanalMessage&lt;T&gt; &#123;    private String database;    private String table;    private String type;    private List&lt;T&gt; data">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于Canal增量同步rabbitmq构建ES索引">
+<meta property="og:url" content="http://example.com/2025/04/20/%E5%9F%BA%E4%BA%8ECanal%E5%A2%9E%E9%87%8F%E5%90%8C%E6%AD%A5rabbitmq%E6%9E%84%E5%BB%BAES%E7%B4%A2%E5%BC%95/index.html">
+<meta property="og:site_name" content="llg">
+<meta property="og:description" content="1. 定义基础消息实体类​   1234567891011@Data@NoArgsConstructorpublic class CanalMessage&lt;T&gt; &#123;    private String database;    private String table;    private String type;    private List&lt;T&gt; data">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/image.png">
+<meta property="article:published_time" content="2025-04-20T05:57:49.000Z">
+<meta property="article:modified_time" content="2025-04-20T13:04:17.199Z">
+<meta property="article:author" content="llg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/image.png">
+  
+  
+  
+  <title>基于Canal增量同步rabbitmq构建ES索引 - llg</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="基于Canal增量同步rabbitmq构建ES索引"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-20 13:57" pubdate>
+          2025年4月20日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">基于Canal增量同步rabbitmq构建ES索引</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="1-定义基础消息实体类​"><a href="#1-定义基础消息实体类​" class="headerlink" title="1. 定义基础消息实体类​"></a>1. 定义基础消息实体类​</h3>   <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Data</span><br><span class="hljs-meta">@NoArgsConstructor</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CanalMessage</span>&lt;T&gt; &#123;<br>    <span class="hljs-keyword">private</span> String database;<br>    <span class="hljs-keyword">private</span> String table;<br>    <span class="hljs-keyword">private</span> String type;<br>    <span class="hljs-keyword">private</span> List&lt;T&gt; data;      <span class="hljs-comment">// 动态数据（根据表结构定义具体类型）</span><br>    <span class="hljs-keyword">private</span> List&lt;T&gt; old;<br>    <span class="hljs-keyword">private</span> Long ts;<br>    <span class="hljs-keyword">private</span> List&lt;String&gt; pkNames;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<h3 id="2-动态数据映射​"><a href="#2-动态数据映射​" class="headerlink" title="2. 动态数据映射​"></a>2. 动态数据映射​</h3><p> 直接解析为 Map 或 JSONObject​​<br>适用于无需强类型校验的场景</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@RabbitListener(queues = &quot;canal.queue&quot;)</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">handleMessage</span><span class="hljs-params">(String message)</span> &#123;<br>    <span class="hljs-type">JsonNode</span> <span class="hljs-variable">root</span> <span class="hljs-operator">=</span> objectMapper.readTree(message);<br>    <span class="hljs-type">String</span> <span class="hljs-variable">table</span> <span class="hljs-operator">=</span> root.get(<span class="hljs-string">&quot;table&quot;</span>).asText();<br>    <span class="hljs-type">JsonNode</span> <span class="hljs-variable">data</span> <span class="hljs-operator">=</span> root.get(<span class="hljs-string">&quot;data&quot;</span>);<br>    <span class="hljs-comment">// 根据表名动态处理数据</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-string">&quot;user&quot;</span>.equals(table)) &#123;<br>        List&lt;User&gt; users = objectMapper.convertValue(data, <span class="hljs-keyword">new</span> <span class="hljs-title class_">TypeReference</span>&lt;List&lt;User&gt;&gt;() &#123;&#125;);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="监听消费队列-同步回写到ES"><a href="#监听消费队列-同步回写到ES" class="headerlink" title="监听消费队列 同步回写到ES"></a>监听消费队列 同步回写到ES</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-meta">@Slf4j</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CanalListerPmsProduct</span> &#123;<br><br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> StringRedisTemplate redisTemplate;<br><br><span class="hljs-meta">@Autowired</span><br><span class="hljs-keyword">private</span> RestHighLevelClient esClient;<br><span class="hljs-meta">@RabbitListener(queues = &quot;pms_sku_sync_queue&quot;)</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">listener</span><span class="hljs-params">(Message message,  Channel channel,</span><br><span class="hljs-params">                     <span class="hljs-meta">@Header(AmqpHeaders.DELIVERY_TAG)</span> <span class="hljs-type">long</span> deliveryTag)</span> &#123;<br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 获取消息体的字节数组</span><br>        log.info(<span class="hljs-string">&quot;canal监听到消息message：&#123;&#125;&quot;</span>, message);<br><br>        <span class="hljs-comment">// 定义泛型类型：CanalMessage&lt;SkuInfoEntity&gt;</span><br>        <span class="hljs-type">Gson</span> <span class="hljs-variable">gson</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Gson</span>();<br>        <span class="hljs-type">byte</span>[] body = message.getBody();<br>        <span class="hljs-comment">// 将字节数组转换为字符串</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">messageBody</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(body);<br>        log.info(<span class="hljs-string">&quot;canal监听到消息：&#123;&#125;&quot;</span>, messageBody);<br><span class="hljs-comment">//        Type type = new TypeToken&lt;List&lt;SkuInfoEntity&gt;&gt;()&#123;&#125;.getType();</span><br>        <span class="hljs-type">CanalMessage</span> <span class="hljs-variable">canalMessage</span> <span class="hljs-operator">=</span> gson.fromJson(messageBody, CanalMessage.class);<br>        log.info(<span class="hljs-string">&quot;canal消息内容：&#123;&#125;&quot;</span>, canalMessage);<br><br>        <span class="hljs-keyword">if</span>(canalMessage.getTable().equals(<span class="hljs-string">&quot;pms_sku_info&quot;</span>))&#123;<br>           <span class="hljs-comment">// 构建ES文档</span><br>            List&lt;Map&gt; skuInfoEntities =gson.fromJson(gson.toJson(canalMessage.getData()),List.class);<br>            <span class="hljs-keyword">for</span> (Map&lt;String, Object&gt; skuInfoEntity : skuInfoEntities) &#123;<br>                <span class="hljs-type">String</span> <span class="hljs-variable">redisKey</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;pms_sku_info:&quot;</span> + skuInfoEntity.get(<span class="hljs-string">&quot;sku_id&quot;</span>);<br>                <span class="hljs-keyword">if</span>(!redisTemplate.opsForValue().setIfAbsent(redisKey, <span class="hljs-string">&quot;processing&quot;</span>, <span class="hljs-number">30</span>, TimeUnit.MINUTES))&#123;<br>                    log.warn(<span class="hljs-string">&quot;重复消费，直接ack|skuid=&#123;&#125;&quot;</span>,skuInfoEntity.get(<span class="hljs-string">&quot;sku_id&quot;</span>));<br>                    channel.basicAck(deliveryTag, <span class="hljs-literal">false</span>);<br>                    <span class="hljs-keyword">return</span>;<br>                &#125;<br>                Map&lt;String, Object&gt; esDoc = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();<br>                esDoc.put(<span class="hljs-string">&quot;sku_id&quot;</span>, skuInfoEntity.get(<span class="hljs-string">&quot;sku_id&quot;</span>));<br>                esDoc.put(<span class="hljs-string">&quot;price&quot;</span>, skuInfoEntity.get(<span class="hljs-string">&quot;price&quot;</span>)); <br>                esDoc.put(<span class="hljs-string">&quot;sku_name&quot;</span>, skuInfoEntity.get(<span class="hljs-string">&quot;sku_name&quot;</span>));<br>                <span class="hljs-comment">// 批量写入es</span><br>                <span class="hljs-type">IndexRequest</span> <span class="hljs-variable">pmsSkuInfo</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IndexRequest</span>(<span class="hljs-string">&quot;pms_sku_info&quot;</span>).id(skuInfoEntity.get(<span class="hljs-string">&quot;sku_id&quot;</span>).toString())<br>                        .source(esDoc);<br><br>                <span class="hljs-type">IndexResponse</span> <span class="hljs-variable">index</span> <span class="hljs-operator">=</span> esClient.index(pmsSkuInfo, RequestOptions.DEFAULT);<br>                log.info(<span class="hljs-string">&quot;同步成功es | index=&#123;&#125;&quot;</span>, index);<br>                <span class="hljs-comment">// 删除锁</span><br>                redisTemplate.delete(redisKey);<br>                <span class="hljs-comment">//手动确认消息</span><br>                channel.basicAck(deliveryTag, <span class="hljs-literal">false</span>);<br>                log.info(<span class="hljs-string">&quot;同步成功 | skuId=&#123;&#125;&quot;</span>, skuInfoEntity.get(<span class="hljs-string">&quot;sku_id&quot;</span>));<br>            &#125;<br><br>        &#125;<br><br>    &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>        log.error(<span class="hljs-string">&quot;处理消息时发生异常&quot;</span>, e);<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">// 获取重试次数</span><br>            <span class="hljs-type">Integer</span> <span class="hljs-variable">retryCount</span> <span class="hljs-operator">=</span> message.getMessageProperties().getHeader(<span class="hljs-string">&quot;x-retry-count&quot;</span>);<br>            <span class="hljs-comment">// 重试3次后进入死信队列（网页3）</span><br>            <span class="hljs-keyword">if</span>(retryCount == <span class="hljs-literal">null</span>) &#123;<br>                retryCount = <span class="hljs-number">0</span>;<br>            &#125;<br>            <span class="hljs-keyword">if</span> (retryCount &lt; <span class="hljs-number">3</span>) &#123;<br>                <span class="hljs-comment">// 添加重试次数请求头</span><br>                message.getMessageProperties().setHeader(<span class="hljs-string">&quot;x-retry-count&quot;</span>, retryCount + <span class="hljs-number">1</span>);<br>                <span class="hljs-comment">// 发送到死信交换机，进入延迟队列</span><br><span class="hljs-comment">//                channel.basicPublish(&quot;canal.topic&quot;, &quot;pms_sku_sync_queue&quot;, null, message.getBody());</span><br>                channel.basicNack(deliveryTag, <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>); <span class="hljs-comment">// 重试</span><br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-comment">//超过重试次数 转人工处理</span><br>                channel.basicReject(deliveryTag, <span class="hljs-literal">false</span>); <span class="hljs-comment">// 丢弃或转死信</span><br>            &#125;<br>        &#125; <span class="hljs-keyword">catch</span> (IOException ex) &#123;<br>            log.error(<span class="hljs-string">&quot;ACK操作异常&quot;</span>, ex);<br>        &#125;<br>    &#125;<br><br>    &#125;<br>&#125;<br><span class="hljs-meta">@Data</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SkuSyncMessage</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Serializable</span> &#123;<br>    <span class="hljs-keyword">private</span> String skuId;       <span class="hljs-comment">// 对应ES的sku_id</span><br>    <span class="hljs-keyword">private</span> BigDecimal price;   <span class="hljs-comment">// 原价（需*100转scaled_float）</span><br>    <span class="hljs-keyword">private</span> String skuName;     <span class="hljs-comment">// 带分词字段</span><br>    <span class="hljs-keyword">private</span> String brandId;      <span class="hljs-comment">// 转short类型</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-type">Integer</span> <span class="hljs-variable">retryCount</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// 重试计数器（网页3）</span><br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>响应结果</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs xml">2025-04-20 20:53:42.970  INFO 59220 --- [ntContainer#0-1] c.m.canal.CanalListerPmsProduct          : canal监听到消息message：(Body:&#x27;[B@6ddb51a5(byte[1064])&#x27; MessageProperties [headers=&#123;&#125;, contentLength=0, redelivered=false, receivedExchange=canal.topic, receivedRoutingKey=pms_sku_sync_queue, deliveryTag=1, consumerTag=amq.ctag-F2aUV6TgDm21hxpi4QKHjA, consumerQueue=pms_sku_sync_queue])<br>2025-04-20 20:53:42.972  INFO 59220 --- [ntContainer#0-1] c.m.canal.CanalListerPmsProduct          : canal监听到消息：&#123;&quot;data&quot;:[&#123;&quot;sku_id&quot;:&quot;6&quot;,&quot;spu_id&quot;:&quot;0&quot;,&quot;sku_name&quot;:&quot;经济款Maroon登录77&quot;,&quot;sku_desc&quot;:&quot;不会今年提高全国标准比较规定不能责任这里.&quot;,&quot;catalog_id&quot;:&quot;201203004&quot;,&quot;brand_id&quot;:&quot;3001&quot;,&quot;sku_default_img&quot;:&quot;https://picsum.photos/301/64&quot;,&quot;sku_title&quot;:&quot;昊嘉官方旗舰商品&quot;,&quot;sku_subtitle&quot;:&quot;拥有个人积分行业原因专业类别北京地方.&quot;,&quot;price&quot;:&quot;89.1800&quot;,&quot;sale_count&quot;:&quot;271&quot;&#125;],&quot;database&quot;:&quot;mall-pms&quot;,&quot;es&quot;:1745153622000,&quot;id&quot;:23,&quot;isDdl&quot;:false,&quot;mysqlType&quot;:&#123;&quot;sku_id&quot;:&quot;bigint(20)&quot;,&quot;spu_id&quot;:&quot;bigint(20)&quot;,&quot;sku_name&quot;:&quot;varchar(255)&quot;,&quot;sku_desc&quot;:&quot;varchar(2000)&quot;,&quot;catalog_id&quot;:&quot;bigint(20)&quot;,&quot;brand_id&quot;:&quot;bigint(20)&quot;,&quot;sku_default_img&quot;:&quot;varchar(255)&quot;,&quot;sku_title&quot;:&quot;varchar(255)&quot;,&quot;sku_subtitle&quot;:&quot;varchar(2000)&quot;,&quot;price&quot;:&quot;decimal(18,4)&quot;,&quot;sale_count&quot;:&quot;bigint(20)&quot;&#125;,&quot;old&quot;:[&#123;&quot;sku_name&quot;:&quot;经济款Maroon登录7&quot;&#125;],&quot;pkNames&quot;:[&quot;sku_id&quot;],&quot;sql&quot;:&quot;&quot;,&quot;sqlType&quot;:&#123;&quot;sku_id&quot;:-5,&quot;spu_id&quot;:-5,&quot;sku_name&quot;:12,&quot;sku_desc&quot;:12,&quot;catalog_id&quot;:-5,&quot;brand_id&quot;:-5,&quot;sku_default_img&quot;:12,&quot;sku_title&quot;:12,&quot;sku_subtitle&quot;:12,&quot;price&quot;:3,&quot;sale_count&quot;:-5&#125;,&quot;table&quot;:&quot;pms_sku_info&quot;,&quot;ts&quot;:1745153622947,&quot;type&quot;:&quot;UPDATE&quot;&#125;<br>2025-04-20 20:53:42.996  INFO 59220 --- [ntContainer#0-1] c.m.canal.CanalListerPmsProduct          : canal消息内容：CanalMessage(database=mall-pms, table=pms_sku_info, type=UPDATE, data=[&#123;sku_id=6, spu_id=0, sku_name=经济款Maroon登录77, sku_desc=不会今年提高全国标准比较规定不能责任这里., catalog_id=201203004, brand_id=3001, sku_default_img=https://picsum.photos/301/64, sku_title=昊嘉官方旗舰商品, sku_subtitle=拥有个人积分行业原因专业类别北京地方., price=89.1800, sale_count=271&#125;], old=[&#123;sku_name=经济款Maroon登录7&#125;], ts=1745153622947, pkNames=[sku_id])<br>2025-04-20 20:53:43.225  WARN 59220 --- [ntContainer#0-1] org.elasticsearch.client.RestClient      : request [PUT http://127.0.0.1:9200/pms_sku_info/_doc/6?timeout=1m] returned 1 warnings: [299 Elasticsearch-7.17.3-5ad023604c8d7416c9eb6c0eadb62b14e766caff &quot;Elasticsearch built-in security features are not enabled. Without authentication, your cluster could be accessible to anyone. See https://www.elastic.co/guide/en/elasticsearch/reference/7.17/security-minimal-setup.html to enable security.&quot;]<br>2025-04-20 20:53:43.249  INFO 59220 --- [ntContainer#0-1] c.m.canal.CanalListerPmsProduct          : 同步成功es | index=IndexResponse[index=pms_sku_info,type=_doc,id=6,version=2,result=updated,seqNo=1,primaryTerm=16,shards=&#123;&quot;total&quot;:1,&quot;successful&quot;:1,&quot;failed&quot;:0&#125;]<br>2025-04-20 20:53:43.262  INFO 59220 --- [ntContainer#0-1] c.m.canal.CanalListerPmsProduct          : 同步成功 | skuId=6<br></code></pre></td></tr></table></figure>
+
+<h3 id="canal-配置"><a href="#canal-配置" class="headerlink" title="canal 配置"></a>canal 配置</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs xml">canal.mq.topic=pms_sku_sync_queue<br># 交换机名（需与 RabbitMQ 实际配置匹配）<br>rabbitmq.exchange=canal.topic<br># dynamic topic route by schema or table regex<br>#canal.mq.dynamicTopic=mytest1.user,    topic2:mytest2\\..*,.*\\..*<br>canal.mq.partition=0<br></code></pre></td></tr></table></figure>
+
+<p>查询ES索引中是否同步成功</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs json">get /pms_sku_info/_search<br><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;match_all&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p><img src="/image.png" srcset="/img/loading.gif" lazyload alt="商品信息"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>基于Canal增量同步rabbitmq构建ES索引</div>
+      <div>http://example.com/2025/04/20/基于Canal增量同步rabbitmq构建ES索引/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>llg</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月20日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/13/canal%E5%92%8CMQ%E9%80%89%E5%9E%8B/" title="canal和MQ选型">
+                        <span class="hidden-mobile">canal和MQ选型</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
