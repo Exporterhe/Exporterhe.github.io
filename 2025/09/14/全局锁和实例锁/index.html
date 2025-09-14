@@ -24,7 +24,7 @@
 <meta property="og:description" content="锁的作用范围不同globalLock - 全局锁1private static final Object globalLock &#x3D; new Object(); &#x2F;&#x2F; 静态变量，类级别   保护的是类级别的静态资源：  defaultInstance - 全局唯一默认 FrameworkModel 实例 allInstances - 所有 FrameworkModel 实例列表  instLock">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-09-14T13:37:48.000Z">
-<meta property="article:modified_time" content="2025-09-14T13:39:01.423Z">
+<meta property="article:modified_time" content="2025-09-14T14:02:38.827Z">
 <meta property="article:author" content="llg">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -219,7 +219,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          473 字
+          1k 字
         
       </span>
     
@@ -230,7 +230,7 @@
         
         
         
-          4 分钟
+          9 分钟
         
       </span>
     
@@ -308,6 +308,28 @@
 <li><a href="file://D:\code\dubbo\dubbo-common\src\main\java\org\apache\dubbo\rpc\model\FrameworkModel.java#L51-L51">globalLock</a> 管理”全局公共资源”</li>
 <li><a href="file://D:\code\dubbo\dubbo-common\src\main\java\org\apache\dubbo\rpc\model\ScopeModel.java#L82-L82">instLock</a> 管理”各自实例的私有资源”</li>
 </ul>
+<h1 id="外部方法调用前已经加锁，内部方法是否还需要加锁"><a href="#外部方法调用前已经加锁，内部方法是否还需要加锁" class="headerlink" title="外部方法调用前已经加锁，内部方法是否还需要加锁"></a>外部方法调用前已经加锁，内部方法是否还需要加锁</h1><p>虽然调用 <a href="file://D:\code\dubbo\dubbo-common\src\main\java\org\apache\dubbo\rpc\model\ScopeModel.java#L99-L112">initialize()</a> 方法的地方确实已经加了锁，但在 <a href="file://D:\code\dubbo\dubbo-common\src\main\java\org\apache\dubbo\rpc\model\ScopeModel.java#L99-L112">initialize()</a> 方法内部再次使用 <code>synchronized (instLock)</code> 是有其必要性的，主要原因如下：</p>
+<h2 id="1-方法的访问控制和封装性"><a href="#1-方法的访问控制和封装性" class="headerlink" title="1. 方法的访问控制和封装性"></a>1. 方法的访问控制和封装性</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// FrameworkModel 构造函数</span><br><span class="hljs-keyword">public</span> <span class="hljs-title function_">FrameworkModel</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-built_in">super</span>(<span class="hljs-literal">null</span>, ExtensionScope.FRAMEWORK, <span class="hljs-literal">false</span>);<br>    <span class="hljs-keyword">synchronized</span> (globalLock) &#123;<br>        <span class="hljs-keyword">synchronized</span> (instLock) &#123;  <span class="hljs-comment">// 外层已经加锁</span><br>            <span class="hljs-comment">// ...</span><br>            initialize();  <span class="hljs-comment">// 调用 initialize()</span><br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// initialize() 方法内部</span><br><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">initialize</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">synchronized</span> (instLock) &#123;  <span class="hljs-comment">// 内层再次加锁 - 这是必要的</span><br>        <span class="hljs-comment">// 初始化逻辑</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<p>虽然在这个特定调用链中锁是重复的，但 <code>initialize()</code> 是一个 <strong>protected 方法</strong>，可能被其他地方直接调用，需要保证自身的线程安全性。</p>
+<h2 id="2-防御性编程"><a href="#2-防御性编程" class="headerlink" title="2. 防御性编程"></a>2. 防御性编程</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">initialize</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">synchronized</span> (instLock) &#123;  <span class="hljs-comment">// 确保 initialize() 方法本身的线程安全</span><br>        <span class="hljs-comment">// 即使外部没有加锁，这里也能保证线程安全</span><br>        <span class="hljs-built_in">this</span>.extensionDirector = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ExtensionDirector</span>(<span class="hljs-comment">/* ... */</span>);<br>        <span class="hljs-built_in">this</span>.beanFactory = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ScopeBeanFactory</span>(<span class="hljs-comment">/* ... */</span>);<br>        <span class="hljs-comment">// ...</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<p>这种做法遵循了”<strong>方法自己负责自己的线程安全</strong>“的原则，无论谁调用 <code>initialize()</code>，都能保证其内部状态的一致性。</p>
+<h2 id="3-代码可维护性和复用性"><a href="#3-代码可维护性和复用性" class="headerlink" title="3. 代码可维护性和复用性"></a>3. 代码可维护性和复用性</h2><p>如果将来有其他地方需要调用 <code>initialize()</code> 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 假设未来在其他地方直接调用 initialize()</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">someOtherMethod</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-comment">// 这里可能没有外部同步块</span><br>    initialize();  <span class="hljs-comment">// 但 initialize() 内部的同步块能保证线程安全</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="4-设计原则：方法的自包含性"><a href="#4-设计原则：方法的自包含性" class="headerlink" title="4. 设计原则：方法的自包含性"></a>4. 设计原则：方法的自包含性</h2><p>每个方法都应该保证自己在多线程环境下的正确性，而不是依赖调用者的同步措施。这符合面向对象设计的封装原则。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>虽然在当前的调用链中确实存在重复加锁，但这种设计是合理的，因为：</p>
+<ol>
+<li><strong>方法自治</strong>：<a href="file://D:\code\dubbo\dubbo-common\src\main\java\org\apache\dubbo\rpc\model\ScopeModel.java#L99-L112">initialize()</a> 方法保证自身的线程安全性</li>
+<li><strong>防御性设计</strong>：防止未来其他调用场景出现问题</li>
+<li><strong>代码规范</strong>：遵循”每个方法管理好自己的并发安全”的最佳实践</li>
+<li><strong>可重入性</strong>：Java 的 synchronized 是可重入的，同一线程多次获取同一锁不会有性能问题</li>
+</ol>
+<p>这是典型的”宁可多加一层保险，也不要留下并发隐患”的设计思想。</p>
 
                 
               </div>
